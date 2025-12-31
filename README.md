@@ -1,59 +1,76 @@
-# RealtimeChat
+<!-- ## Database Table Schema -->
+## users table
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.0.4.
+* id (uuid)
+* full_name (text)
+* avatar_url (text)
 
-## Development server
+## Creating a users table
 
-To start a local development server, run:
-
-```bash
-ng serve
+```sql
+CREATE TABLE public.users (
+   id uuid not null references auth.users on delete cascade,
+   full_name text NULL,
+   avatar_url text NULL,
+   primary key (id)
+);
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Enable Row Level Security
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```sql
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Permit Users Access Their Profile
 
-```bash
-ng generate --help
+```sql
+CREATE POLICY "Permit Users to Access Their Profile"
+  ON public.users
+  FOR SELECT
+  USING ( auth.uid() = id );
 ```
 
-## Building
+## Permit Users to Update Their Profile
 
-To build the project run:
-
-```bash
-ng build
+```sql
+CREATE POLICY "Permit Users to Update Their Profile"
+  ON public.users
+  FOR UPDATE
+  USING ( auth.uid() = id );
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Supabase Functions
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```sql
+CREATE
+OR REPLACE FUNCTION public.user_profile() RETURNS TRIGGER AS $$ BEGIN INSERT INTO public.users (id, full_name,avatar_url)
+VALUES
+  (
+    NEW.id,
+    NEW.raw_user_meta_data ->> 'full_name'::TEXT,
+    NEW.raw_user_meta_data ->> 'avatar_url'::TEXT,
+  );
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-## Running end-to-end tests
+## Supabase Trigger
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+```sql
+  CREATE TRIGGER
+  create_user_trigger
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE PROCEDURE
+    public.user_profile();
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Chat_Messages table (Real Time)
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+* id (uuid)
+* Created At (date)
+* text (text)
+* editable (boolean)
+* sender (uuid)
