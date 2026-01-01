@@ -15,7 +15,8 @@
                   <img src={{msg?.users?.avatar_url}} class="rounded-circle mr-1" alt="image" width="40" height="40">
                   <div class="text-muted small text-nowrap mt-2">{{msg?.created_at | date: 'M/d/yy, h:mm a'}}</div>
                 </div>
-                <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
+                  <div class="flex-shrink-1 chat-bubble py-2 px-3 ml-3"
+                      [ngClass]="msg?.users?.id === currentUserId ? 'sent' : 'received'">
                   <div class="font-weight-bold mb-1">{{msg?.users?.full_name}}</div>
                   {{msg?.text}}
                 </div>

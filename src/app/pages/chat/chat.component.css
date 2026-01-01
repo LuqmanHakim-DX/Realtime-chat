@@ -26,3 +26,25 @@
 .border-top {
     border-top: 1px solid #dee2e6!important;
 }
+
+/* === Chat bubble base === */
+.chat-bubble {
+  max-width: 70%;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* === Other people (purple) === */
+.chat-bubble.received {
+  background-color: #37a3e7;
+  color: #ffffff;
+}
+
+/* === Your messages (white) === */
+.chat-bubble.sent {
+  background-color: #475ef4;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  margin-left: auto;
+}

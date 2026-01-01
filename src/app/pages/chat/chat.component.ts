@@ -11,12 +11,13 @@ import { ChatService } from '../../services/chat-service';
 import { Ichat } from '../../interface/chat-response';
 import { DatePipe } from '@angular/common';
 import { ModalComponent } from '../../layout/modal/modal-component';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [ReactiveFormsModule, DatePipe, ModalComponent],
+  imports: [CommonModule,ReactiveFormsModule, DatePipe, ModalComponent],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css',
 })
@@ -27,7 +28,8 @@ export class ChatComponent {
   private fb = inject(FormBuilder);
   chats = signal<Ichat[]>([]);
   private router = inject(Router);
-  
+  currentUserId: string | null = null;
+
   constructor() {
     effect(() => {
       this.onListChat();
@@ -50,10 +52,13 @@ export class ChatComponent {
       });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.chatForm = this.fb.group({
-      chat_message: ['', Validators.required],
+    chat_message: ['', Validators.required],
     });
+
+    const user = await this.auth.getCurrentUser();
+    this.currentUserId = user?.id ?? null;
   }
 
   onSubmit() {

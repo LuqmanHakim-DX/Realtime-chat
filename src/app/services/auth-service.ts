@@ -46,4 +46,13 @@ export class AuthService {
   async signOut() {
     await this.supabase.auth.signOut();
   }
+
+  async getCurrentUser() {
+  const { data, error } = await this.supabase.auth.getUser();
+  if (error) {
+    console.error(error.message);
+    return null;
+  }
+  return data.user;
+}
 }
